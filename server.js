@@ -30,7 +30,9 @@ connectCloudinary();
 
 // Middlewares
 app.use(express.json());
-app.use(cors({ allowedHeaders: ["Content-Type", "Authorization", "token"] }));
+app.use(
+  cors({ allowedHeaders: ["Content-Type", "Authorization", "token", "Token"] })
+);
 
 // API Endpoints
 app.use("/api/user", userRouter);
