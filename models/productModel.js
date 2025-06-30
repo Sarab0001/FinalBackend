@@ -23,6 +23,10 @@ const productSchema = new mongoose.Schema({
     ],
     default: [],
   },
+  careInstructions: {
+    type: [String],
+    default: [],
+  },
 });
 
 const productModel =

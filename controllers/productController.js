@@ -12,7 +12,8 @@ const addProduct = async (req, res) => {
       subCategory,
       sizes,
       bestseller,
-      sizeChart, // ✅ added
+      sizeChart,
+      careInstructions,
     } = req.body;
 
     const image1 = req.files.image1 && req.files.image1[0];
@@ -41,6 +42,7 @@ const addProduct = async (req, res) => {
       bestseller: bestseller === "true",
       sizes: JSON.parse(sizes),
       sizeChart: sizeChart ? JSON.parse(sizeChart) : [], // ✅ added
+      careInstructions: careInstructions ? JSON.parse(careInstructions) : [],
       image: imagesUrl,
       date: Date.now(),
     };
@@ -90,7 +92,8 @@ const updateProduct = async (req, res) => {
       subCategory,
       sizes,
       bestseller,
-      sizeChart, // ✅ added
+      sizeChart,
+      careInstructions,
     } = req.body;
 
     let imagesUrl = [];
@@ -122,7 +125,8 @@ const updateProduct = async (req, res) => {
       subCategory,
       bestseller: bestseller === "true",
       sizes: JSON.parse(sizes),
-      sizeChart: sizeChart ? JSON.parse(sizeChart) : [], // ✅ added
+      sizeChart: sizeChart ? JSON.parse(sizeChart) : [],
+      careInstructions: careInstructions ? JSON.parse(careInstructions) : [],
     };
 
     if (imagesUrl.length > 0) updateFields.image = imagesUrl;
