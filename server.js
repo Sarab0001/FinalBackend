@@ -22,6 +22,8 @@ import categoryRouter from "./routes/categoryRoute.js";
 import reviewRouter from "./routes/reviewRoute.js";
 import backgroundVideoRouter from "./routes/backgroundVideoRoute.js";
 import carouselRouter from "./routes/carouselRoute.js";
+import aboutUsRouter from "./routes/aboutUsRoute.js";
+import qikinkRouter from "./routes/qikinkRoute.js";
 // App Config
 const app = express();
 const port = process.env.PORT || 4000;
@@ -46,6 +48,11 @@ app.use("/api/category", categoryRouter);
 app.use("/api/review", reviewRouter);
 app.use("/api/background_video", backgroundVideoRouter);
 app.use("/api/carousel", carouselRouter);
+app.use("/api/about", aboutUsRouter);
+app.use("/api/qikink", qikinkRouter);
+
+app.use("/uploads", express.static("uploads"));
+
 // Serve videos statically
 app.use(
   "/uploads/videos",
