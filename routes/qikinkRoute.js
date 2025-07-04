@@ -5,6 +5,7 @@ import {
   getAllQikinkOrders,
   getSingleQikinkOrder,
   checkQikinkOrderStatus,
+  getUserQikinkOrders,
 } from "../controllers/qikinkOrderController.js";
 import authUser from "../middleware/auth.js";
 
@@ -15,6 +16,7 @@ qikinkRouter.post("/create-order", authUser, createQikinkOrder);
 
 qikinkRouter.get("/get-orders", getAllQikinkOrders);
 qikinkRouter.get("/get-order/:id", getSingleQikinkOrder);
+qikinkRouter.get("/user-orders", authUser, getUserQikinkOrders);
 
 qikinkRouter.get("/check-order-status/:orderId", checkQikinkOrderStatus);
 

@@ -12,15 +12,7 @@ const productSchema = new mongoose.Schema({
   bestseller: { type: Boolean },
   date: { type: Number, required: true },
   sizeChart: {
-    type: [
-      {
-        size: String,
-        chest: String,
-        length: String,
-        shoulder: String,
-        sleeve: String,
-      },
-    ],
+    type: [mongoose.Schema.Types.Mixed],
     default: [],
   },
   careInstructions: {

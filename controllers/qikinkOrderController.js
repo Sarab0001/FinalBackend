@@ -42,6 +42,7 @@ export const getQikinkToken = async (req, res) => {
 // ----------------------
 export const createQikinkOrder = async (req, res) => {
   try {
+    // Ensure token exists
     if (!qikinkToken) {
       const tokenResponse = await axios({
         method: "post",
@@ -58,6 +59,7 @@ export const createQikinkOrder = async (req, res) => {
       console.log("🔁 Token auto-fetched:", qikinkToken);
     }
 
+    // Extract order data
     const {
       shipping_address,
       line_items,
@@ -69,6 +71,7 @@ export const createQikinkOrder = async (req, res) => {
 
     const userId = req.user._id;
 
+    // Generate custom order number
     const order_number = `QK${Date.now().toString().slice(-8)}${Math.floor(
       Math.random() * 100
     )
@@ -87,6 +90,7 @@ export const createQikinkOrder = async (req, res) => {
 
     console.log("📦 Creating order with:", orderPayload);
 
+    // Send request to Qikink
     const config = {
       method: "post",
       url: "https://sandbox.qikink.com/api/order/create",
@@ -101,20 +105,25 @@ export const createQikinkOrder = async (req, res) => {
 
     const response = await axios(config);
 
-    // ✅ Save in DB
+    // Prepare address fields for DB
+    const fullName = `${shipping_address.first_name} ${shipping_address.last_name}`;
+    const fullAddress = `${shipping_address.address1}, ${shipping_address.city}, ${shipping_address.province} - ${shipping_address.zip}`;
+
+    // ✅ Save order in your database
     const newDbOrder = new QikinkOrder({
       userId,
       id: response.data?.order_id?.toString() || "",
-      name: shipping_address.name || "",
+      name: fullName,
       email: shipping_address.email || "",
       phone: shipping_address.phone || "",
-      address: `${shipping_address.address}, ${shipping_address.city}, ${shipping_address.state} - ${shipping_address.pincode}`,
+      address: fullAddress,
       orderDate: new Date(),
       orderStatus: "Order Placed",
       total: Number(total_order_value),
     });
 
     await newDbOrder.save();
+    console.log("✅ Order saved in MongoDB:", newDbOrder);
 
     res.status(200).json({ success: true, response: response.data });
   } catch (error) {
@@ -276,5 +285,20 @@ export const checkQikinkOrderStatus = async (req, res) => {
       success: false,
       error: error.response?.data || error.message,
     });
+  }
+};
+
+export const getUserQikinkOrders = async (req, res) => {
+  try {
+    console.log("🔐 Authenticated user:", req.user); // 🔍 check if user is received
+
+    const userId = req.user._id;
+
+    const orders = await QikinkOrder.find({ userId }).sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, orders });
+  } catch (error) {
+    console.error("❌ Fetch user orders error:", error.message);
+    res.status(500).json({ success: false, error: error.message });
   }
 };
