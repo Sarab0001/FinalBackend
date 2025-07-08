@@ -24,6 +24,7 @@ import backgroundVideoRouter from "./routes/backgroundVideoRoute.js";
 import carouselRouter from "./routes/carouselRoute.js";
 import aboutUsRouter from "./routes/aboutUsRoute.js";
 import qikinkRouter from "./routes/qikinkRoute.js";
+import contactUsRouter from "./routes/contactUsRoute.js";
 // App Config
 const app = express();
 const port = process.env.PORT || 4000;
@@ -50,6 +51,7 @@ app.use("/api/background_video", backgroundVideoRouter);
 app.use("/api/carousel", carouselRouter);
 app.use("/api/about", aboutUsRouter);
 app.use("/api/qikink", qikinkRouter);
+app.use("/api/contact", contactUsRouter);
 
 app.use("/uploads", express.static("uploads"));
 

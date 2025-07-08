@@ -120,6 +120,7 @@ export const createQikinkOrder = async (req, res) => {
       orderDate: new Date(),
       orderStatus: "Order Placed",
       total: Number(total_order_value),
+      orderItems: line_items,
     });
 
     await newDbOrder.save();
@@ -255,35 +256,74 @@ export const checkQikinkOrderStatus = async (req, res) => {
       qikinkToken = tokenResponse.data.Accesstoken;
     }
 
-    const { orderId } = req.params;
+    const { ids, orderId } = req.query;
 
-    const response = await axios.get(
-      `https://sandbox.qikink.com/api/order?id=${orderId}`,
-      {
-        headers: {
-          ClientId: process.env.QIKINK_CLIENT_ID,
-          Accesstoken: qikinkToken,
-        },
+    if (orderId) {
+      // Legacy single order ID (if provided via query instead of param)
+      const response = await axios.get(
+        `https://sandbox.qikink.com/api/order?id=${orderId}`,
+        {
+          headers: {
+            ClientId: process.env.QIKINK_CLIENT_ID,
+            Accesstoken: qikinkToken,
+          },
+        }
+      );
+
+      return res.status(200).json({
+        success: true,
+        order_id: response.data.order_id,
+        number: response.data.number,
+        status: response.data.status,
+        tracking_link: response.data.shipping?.tracking_link || null,
+        awb: response.data.shipping?.awb || null,
+      });
+    }
+
+    if (!ids || ids.length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "No order IDs provided" });
+    }
+
+    const orderIds = Array.isArray(ids) ? ids : [ids]; // ensure array
+    const results = [];
+
+    for (const id of orderIds) {
+      try {
+        const response = await axios.get(
+          `https://sandbox.qikink.com/api/order?id=${id}`,
+          {
+            headers: {
+              ClientId: process.env.QIKINK_CLIENT_ID,
+              Accesstoken: qikinkToken,
+            },
+          }
+        );
+
+        results.push({
+          success: true,
+          order_id: response.data.order_id,
+          number: response.data.number,
+          status: response.data.status,
+          tracking_link: response.data.shipping?.tracking_link || null,
+          awb: response.data.shipping?.awb || null,
+        });
+      } catch (err) {
+        results.push({
+          success: false,
+          order_id: id,
+          error: err.response?.data || err.message,
+        });
       }
-    );
+    }
 
-    const orderData = response.data;
-    res.status(200).json({
-      success: true,
-      order_id: orderData.order_id,
-      number: orderData.number,
-      status: orderData.status,
-      tracking_link: orderData.shipping?.tracking_link || null,
-      awb: orderData.shipping?.awb || null,
-    });
+    res.status(200).json({ success: true, orders: results });
   } catch (error) {
-    console.error(
-      "❌ Order status fetch error:",
-      error.response?.data || error.message
-    );
+    console.error("❌ Order status fetch error:", error.message);
     res.status(500).json({
       success: false,
-      error: error.response?.data || error.message,
+      error: error.message,
     });
   }
 };

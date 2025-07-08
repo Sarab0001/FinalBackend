@@ -33,14 +33,3 @@ export const addAboutUs = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
-export const editAboutUs = async (req, res) => {
-  try {
-    const aboutUs = await AboutUs.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    res.json({ message: "About Us updated successfully" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};

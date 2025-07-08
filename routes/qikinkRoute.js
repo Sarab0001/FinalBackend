@@ -18,6 +18,6 @@ qikinkRouter.get("/get-orders", getAllQikinkOrders);
 qikinkRouter.get("/get-order/:id", getSingleQikinkOrder);
 qikinkRouter.get("/user-orders", authUser, getUserQikinkOrders);
 
-qikinkRouter.get("/check-order-status/:orderId", checkQikinkOrderStatus);
+qikinkRouter.get("/check-order-status", checkQikinkOrderStatus);
 
 export default qikinkRouter;
