@@ -11,6 +11,7 @@ const footerSchema = new mongoose.Schema({
     twitter: String,
     youtube: String,
   },
+  copyright: String,
 });
 const footerModel =
   mongoose.models.footer || mongoose.model("footer", footerSchema);
