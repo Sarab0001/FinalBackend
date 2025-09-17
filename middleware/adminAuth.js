@@ -1,20 +1,46 @@
 import jwt from "jsonwebtoken";
+import userAdminModel from "../models/userAdminModel.js";
 
-const adminAuth = async(req,res,next) => {
-    try {
-        const {token} = req.headers
-        if(!token){
-            return res.json({success:false , message:"Not Authorized Login Again"})
-        }
-        const token_decode = jwt.verify(token,process.env.JWT_SECRET);
-        if(token_decode !== process.env.ADMIN_EMAIL + process.env.ADMIN_PASSWORD){
-            return res.json({success:false , message:"Not Authorized Login Again"})
-        }
-        next();
-    } catch (error) {
-        console.log(error)
-        res.json({success:false , message:error.message})
+const adminAuth = async (req, res, next) => {
+  console.log("🛡️ adminAuth middleware triggered");
+
+  try {
+    const token = req.headers.token;
+    console.log("🪙 Received token:", token);
+
+    if (!token) {
+      console.log("❌ No token found in headers");
+      return res.status(401).json({
+        success: false,
+        message: "Not Authorized, Token Missing",
+      });
     }
-}
 
-export default adminAuth
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("✅ Token decoded:", decoded);
+
+    const userId = decoded.id || decoded.adminId;
+    console.log("🔍 Extracted user ID from token:", userId);
+
+    const adminUser = await userAdminModel.findById(userId);
+    console.log("🔐 Found admin user:", adminUser?.email || "Not Found");
+
+    if (!adminUser) {
+      return res.status(404).json({
+        success: false,
+        message: "Admin User not found",
+      });
+    }
+
+    req.user = adminUser;
+    next();
+  } catch (error) {
+    console.error("❌ Error in adminAuth:", error.message);
+    return res.status(401).json({
+      success: false,
+      message: "Token verification failed",
+    });
+  }
+};
+
+export default adminAuth;

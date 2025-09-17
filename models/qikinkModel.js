@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 
 const qikinkOrderSchema = new mongoose.Schema({
+  adminId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "useradmin",
+    required: true,
+  }, // 🔑 Link to Admin
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   id: { type: String },
   name: { type: String },

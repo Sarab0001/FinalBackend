@@ -3,7 +3,23 @@ import fs from "fs";
 
 export const getBackgroundVideos = async (req, res) => {
   try {
-    const backgroundVideos = await BackgroundVideo.find();
+    let adminId;
+    if (req.user?._id) {
+      adminId = req.user._id; // From verified token
+    } else if (req.query.adminId) {
+      adminId = req.query.adminId; // From frontend query
+    } else {
+      return res.status(400).json({
+        message: "Admin ID is required",
+      });
+    }
+    console.log("🔐 getBackgroundVideos req.user:", req.user);
+    const backgroundVideos = await BackgroundVideo.find({ adminId });
+    if (!backgroundVideos) {
+      return res.status(404).json({
+        message: "No background videos found",
+      });
+    }
     res.status(200).json(backgroundVideos);
   } catch (error) {
     res.status(500).json({ message: "Error fetching background videos" });
@@ -14,6 +30,7 @@ export const addBackgroundVideo = async (req, res) => {
   try {
     const { name } = req.body;
     const file = req.file;
+    const adminId = req.user._id;
 
     if (!name || !file) {
       return res
@@ -22,42 +39,26 @@ export const addBackgroundVideo = async (req, res) => {
     }
 
     const url = `/uploads/videos/${file.filename}`;
-
-    // Check for existing video
-    const existingVideo = await BackgroundVideo.findOne();
+    const existingVideo = await BackgroundVideo.findOne({ adminId });
 
     if (existingVideo) {
-      // Delete old video file
       const oldVideoPath = `uploads/videos/${existingVideo.url
         .split("/")
         .pop()}`;
-      if (fs.existsSync(oldVideoPath)) {
-        fs.unlinkSync(oldVideoPath);
-      }
+      if (fs.existsSync(oldVideoPath)) fs.unlinkSync(oldVideoPath);
 
-      // Update existing record
       existingVideo.name = name;
       existingVideo.url = url;
       await existingVideo.save();
 
-      return res.status(200).json({
-        success: true,
-        message: "Background video updated successfully",
-        data: existingVideo,
-      });
+      return res.status(200).json({ success: true, data: existingVideo });
     }
 
-    // Create new video if none exists
-    const newBackgroundVideo = new BackgroundVideo({ name, url });
+    const newBackgroundVideo = new BackgroundVideo({ name, url, adminId });
     await newBackgroundVideo.save();
 
-    res.status(201).json({
-      success: true,
-      message: "Video uploaded successfully",
-      data: newBackgroundVideo,
-    });
+    res.status(201).json({ success: true, data: newBackgroundVideo });
   } catch (error) {
-    console.error("Upload error:", error);
     res.status(500).json({ message: "Error uploading background video" });
   }
 };

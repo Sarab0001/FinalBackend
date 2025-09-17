@@ -5,6 +5,11 @@ import connectDB from "./config/mongodb.js";
 import connectCloudinary from "./config/cloudinary.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import "./models/productModel.js";
+import "./models/orderModel.js";
+import "./models/categoryModel.js";
+import "./models/footerModel.js";
+import "./models/aboutUsModel.js";
 
 // Required to use __dirname in ES Modules
 const __filename = fileURLToPath(import.meta.url);
@@ -25,10 +30,15 @@ import carouselRouter from "./routes/carouselRoute.js";
 import aboutUsRouter from "./routes/aboutUsRoute.js";
 import qikinkRouter from "./routes/qikinkRoute.js";
 import contactUsRouter from "./routes/contactUsRoute.js";
+import checkSubscription from "./middleware/checkSubscription.js";
+import subscriptionRouter from "./routes/subscriptionRoute.js";
+import userAdminRouter from "./routes/userAdminRoute.js";
+import filterRouter from "./routes/filterRoute.js";
 // App Config
 const app = express();
 const port = process.env.PORT || 4000;
 connectDB();
+
 connectCloudinary();
 
 // Middlewares
@@ -39,9 +49,10 @@ app.use(
 
 // API Endpoints
 app.use("/api/user", userRouter);
-app.use("/api/product", productRouter);
-app.use("/api/cart", cartRouter);
-app.use("/api/order", orderRouter);
+app.use("/api/user-admin", userAdminRouter);
+app.use("/api/product", productRouter, checkSubscription);
+app.use("/api/cart", cartRouter, checkSubscription);
+app.use("/api/order", orderRouter, checkSubscription);
 app.use("/api/modify", modifyUiRouter);
 app.use("/api/settings", settingsRouter);
 app.use("/api/footer", footerRouter);
@@ -52,8 +63,9 @@ app.use("/api/carousel", carouselRouter);
 app.use("/api/about", aboutUsRouter);
 app.use("/api/qikink", qikinkRouter);
 app.use("/api/contact", contactUsRouter);
-
+app.use("/api/user/subscription", subscriptionRouter);
 app.use("/uploads", express.static("uploads"));
+app.use("/api", filterRouter);
 
 // Serve videos statically
 app.use(

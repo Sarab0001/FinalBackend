@@ -1,11 +1,27 @@
 import Settings from "../models/Settings.js";
 
-// Get background color
+// Get settings for the logged-in admin
 const getSettings = async (req, res) => {
   try {
-    let settings = await Settings.findOne();
+    let adminId;
+    if (req.user?._id) {
+      adminId = req.user._id;
+    } else if (req.query.adminId) {
+      adminId = req.query.adminId;
+    } else {
+      return res.status(400).json({
+        error: "Admin ID is required",
+      });
+    }
+
+    let settings = await Settings.findOne({ adminId });
     if (!settings) {
-      settings = await Settings.create({});
+      return res.status(404).json({
+        error: "Settings not found for this admin",
+      });
+    }
+    if (!settings) {
+      settings = await Settings.create({ adminId });
     }
     res.json({ backgroundColor: settings.backgroundColor });
   } catch (err) {
@@ -13,17 +29,22 @@ const getSettings = async (req, res) => {
   }
 };
 
-// Update background color
+// Update background color for the logged-in admin
 const updateSettings = async (req, res) => {
   const { backgroundColor } = req.body;
   try {
-    let settings = await Settings.findOne();
+    let settings = await Settings.findOne({ adminId: req.user._id });
+
     if (!settings) {
-      settings = await Settings.create({ backgroundColor });
+      settings = await Settings.create({
+        adminId: req.user._id,
+        backgroundColor,
+      });
     } else {
       settings.backgroundColor = backgroundColor;
       await settings.save();
     }
+
     res.json({ message: "Background color updated", backgroundColor });
   } catch (err) {
     res.status(500).json({ error: "Server error" });

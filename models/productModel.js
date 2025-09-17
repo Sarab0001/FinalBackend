@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 
 const productSchema = new mongoose.Schema({
+  adminId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "useradmin",
+    required: true,
+  }, // 🔑 Link to Admin
   name: { type: String, required: true },
   description: { type: String, required: true },
   originalPrice: { type: Number, required: true },

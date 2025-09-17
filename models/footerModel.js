@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 
 const footerSchema = new mongoose.Schema({
+  adminId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "useradmin",
+    required: true,
+  }, // 🔑 Link to Admin
   description: String,
   number: String,
   email: String,

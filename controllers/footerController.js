@@ -1,17 +1,14 @@
 import footerModel from "../models/footerModel.js";
 
-// UPDATE FOOTER
 export const addFooter = async (req, res) => {
   const { description, number, email, address, social, copyright } = req.body;
-
   try {
-    const footer = await footerModel.findOne(); // Get the existing footer document
+    let footer = await footerModel.findOne({ adminId: req.user._id });
 
     if (!footer) {
-      return res.json({ success: false, message: "Footer not found" });
+      footer = new footerModel({ adminId: req.user._id });
     }
 
-    // Update the existing fields
     footer.description = description;
     footer.number = number;
     footer.email = email;
@@ -21,20 +18,34 @@ export const addFooter = async (req, res) => {
 
     await footer.save();
 
-    res.json({ success: true, message: "Footer updated", data: footer });
+    res.json({ success: true, data: footer });
   } catch (error) {
-    console.log(error);
     res.json({ success: false, message: error.message });
   }
 };
 
-// GET FOOTER
 export const getFooter = async (req, res) => {
   try {
-    const footer = await footerModel.find();
+    let adminId;
+    if (req.user?._id) {
+      adminId = req.user._id;
+    } else if (req.query.adminId) {
+      adminId = req.query.adminId;
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Admin ID is required",
+      });
+    }
+    const footer = await footerModel.findOne({ adminId });
+    if (!footer) {
+      return res.status(404).json({
+        success: false,
+        message: "Footer not found",
+      });
+    }
     res.json({ success: true, data: footer });
   } catch (error) {
-    console.log(error);
     res.json({ success: false, message: error.message });
   }
 };
